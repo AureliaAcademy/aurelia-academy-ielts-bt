@@ -292,6 +292,34 @@ footer p{margin:4px 0 0}
   body>*:not(#print-root){display:none!important}
   #print-root{display:block!important;color:#111;background:#fff;font-size:11pt}
 }
+
+/* ===== Aurelia animated unit selector ===== */
+.unit-switcher{position:relative;flex:0 0 auto}
+.unit-switch-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 13px;border:1px solid rgba(139,92,246,.45);border-radius:13px;color:#fff;background:linear-gradient(135deg,#4C1D95,#7C3AED 65%,#A78BFA);box-shadow:0 5px 16px rgba(109,40,217,.22);font:650 .86rem/1.2 var(--font);white-space:nowrap;transition:transform .18s ease,box-shadow .18s ease}
+.unit-switch-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(109,40,217,.3)}
+.unit-switch-btn .chev{display:inline-block;transition:transform .22s ease}
+.unit-switcher.open .unit-switch-btn .chev{transform:rotate(180deg)}
+.unit-menu{position:absolute;right:0;top:calc(100% + 9px);z-index:100;display:grid;gap:6px;width:min(270px,calc(100vw - 28px));padding:9px;border:1px solid var(--border);border-radius:18px;background:var(--surface);box-shadow:0 18px 45px rgba(38,12,76,.24);opacity:0;visibility:hidden;transform:translateY(-8px) scale(.98);transform-origin:top right;transition:opacity .2s ease,transform .2s ease,visibility .2s ease}
+.unit-switcher.open .unit-menu{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.unit-menu a{display:flex;align-items:center;gap:11px;padding:11px 12px;min-height:54px;border:1px solid transparent;border-radius:12px;text-decoration:none;color:var(--text);background:var(--surface);transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.unit-menu a:hover{background:var(--lav);border-color:var(--border);transform:translateX(2px)}
+.unit-menu a[aria-current="page"]{background:var(--soft);border-color:var(--accent)}
+.unit-menu .unit-num{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:10px;color:#fff;background:linear-gradient(135deg,var(--deep),var(--accent));font-weight:800;font-size:.82rem}
+.unit-menu .unit-copy{display:grid;gap:1px;min-width:0}
+.unit-menu .unit-copy b{font-size:.9rem;line-height:1.25}
+.unit-menu .unit-copy small{color:var(--text2);font-size:.78rem}
+.unit-menu .current-mark{margin-left:auto;color:var(--primary);font-weight:800}
+@media(max-width:560px){
+ .topbar{gap:8px;padding-left:10px;padding-right:10px}
+ .brand{gap:7px;flex:1 1 auto}
+ .brand b{font-size:.7rem;letter-spacing:.08em}
+ .brand small{font-size:.7rem;max-width:100px}
+ .unit-switch-btn{padding:8px 10px;font-size:.78rem;gap:5px}
+ .topbar #theme-btn{padding:7px 9px;font-size:.76rem;min-height:40px}
+ .topbar .spacer{display:none}
+}
+@media(prefers-reduced-motion:reduce){.unit-menu,.unit-switch-btn,.unit-menu a,.unit-switch-btn .chev{transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -300,8 +328,17 @@ footer p{margin:4px 0 0}
   <div class="brand"><span class="mark">A</span><span><b>AURELIA ACADEMY</b><small id="hdr-unit"></small></span></div>
   <div class="topbar-mid" id="hdr-progress" hidden><div class="bar"><i id="hdr-bar"></i></div><span id="hdr-count"></span></div>
   <span class="spacer" id="hdr-spacer"></span>
+  <div class="unit-switcher" id="unit-switcher">
+    <button class="unit-switch-btn" id="unit-switch-btn" type="button" aria-expanded="false" aria-controls="unit-menu">
+      <span aria-hidden="true">▦</span><span>Chọn bài</span><span class="chev" aria-hidden="true">⌄</span>
+    </button>
+    <nav class="unit-menu" id="unit-menu" aria-label="Chọn bài học">
+      <a href="index.html" aria-current="page"><span class="unit-num">4</span><span class="unit-copy"><b>Unit 4 · Time</b><small>Đang mở bài này</small></span><span class="current-mark" aria-hidden="true">✓</span></a>
+      <a href="unit-5.html"><span class="unit-num">5</span><span class="unit-copy"><b>Unit 5 · Dates</b><small>Mở bài học</small></span></a>
+      <a href="unit-6.html"><span class="unit-num">6</span><span class="unit-copy"><b>Unit 6 · Jobs</b><small>Mở bài học</small></span></a>
+    </nav>
+  </div>
   <button class="ghost" id="theme-btn" type="button" aria-label="Chuyển chế độ sáng hoặc tối">Giao diện</button>
-  <a class="ghost" href="unit-5.html" style="text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap" aria-label="Chuyển sang Unit 5">Unit 5 →</a>
 </header>
 <main id="main">
   <section class="hero" id="hero"></section>
@@ -1481,5 +1518,25 @@ ui.init(); themeController.init();
 window.__AUR = { dock, dictation, inlineFeedback, audioManager, C, ALL, SCORED, state, answerNormalizer, scoringEngine, errorAnalyzer, feedbackEngine, progressTracker, submissionController, reportGenerator, resultView };
 
 </script>
+
+<script>
+(function(){
+  const wrap=document.getElementById('unit-switcher');
+  const btn=document.getElementById('unit-switch-btn');
+  const menu=document.getElementById('unit-menu');
+  if(!wrap||!btn||!menu)return;
+  function closeMenu(){wrap.classList.remove('open');btn.setAttribute('aria-expanded','false');}
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    const open=!wrap.classList.contains('open');
+    wrap.classList.toggle('open',open);
+    btn.setAttribute('aria-expanded',String(open));
+  });
+  document.addEventListener('click',function(e){if(!wrap.contains(e.target))closeMenu();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeMenu();btn.focus();}});
+  menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeMenu);});
+})();
+</script>
+
 </body>
 </html>
