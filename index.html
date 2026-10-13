@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6d28d9">
+<title>Đăng nhập | AURELIA ACADEMY</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 10% 10%,#fce7f3,transparent 35%),radial-gradient(circle at 90% 90%,#ddd6fe,transparent 35%),#faf8ff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#25183e}.card{width:min(100%,900px);display:grid;grid-template-columns: .9fr 1.1fr;background:white;border-radius:26px;overflow:hidden;box-shadow:0 24px 70px #4c1d9520}.hero{padding:42px;color:white;background:linear-gradient(145deg,#4c1d95,#7c3aed 58%,#db2777);display:flex;flex-direction:column;justify-content:space-between;min-height:500px}.brand{font-size:12px;font-weight:800;letter-spacing:.2em}.hero h1{font-size:42px;line-height:1.08;margin:36px 0 12px}.hero p{line-height:1.7;color:#f3e8ff}.tag{font-size:12px;border:1px solid #ffffff70;border-radius:30px;padding:9px 12px;width:max-content}.panel{padding:42px;align-self:center}.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:#6d28d9}h2{font-size:28px;margin:9px 0}.intro{color:#756b87;font-size:14px;line-height:1.65}label{display:block;font-size:13px;font-weight:700;margin:17px 0 7px}input{width:100%;padding:14px;border:1px solid #ded5ed;border-radius:12px;font-size:15px;outline:none}input:focus{border-color:#7c3aed;box-shadow:0 0 0 4px #7c3aed18}button{width:100%;border:0;border-radius:12px;padding:14px;margin-top:15px;background:linear-gradient(100deg,#6d28d9,#db2777);color:white;font-weight:800;cursor:pointer}button:disabled{opacity:.6}.secondary{background:#f3edff;color:#4c1d95;border:1px solid #e5dafb;box-shadow:none}.status{display:none;margin-top:14px;padding:12px;border-radius:11px;font-size:13px;line-height:1.5;overflow-wrap:anywhere}.status.show{display:block}.info{background:#f4efff;color:#4c1d95}.ok{background:#ecfdf5;color:#065f46}.error{background:#fff1f2;color:#9f1239}.lessons{display:none;border-top:1px solid #eee7f7;margin-top:22px;padding-top:18px}.lessons.show{display:block}.lesson{display:flex;justify-content:space-between;padding:13px;margin-top:9px;border:1px solid #e9e2f5;border-radius:12px;text-decoration:none;color:#4c1d95;font-weight:700}.lesson:hover{background:#faf5ff;border-color:#c4b5fd}.fine{font-size:11px;color:#968ca6;line-height:1.5;margin-top:22px}@media(max-width:680px){.card{grid-template-columns:1fr}.hero{min-height:210px;padding:25px}.hero h1{font-size:32px;margin:22px 0 8px}.hero p{margin:0}.tag{margin-top:18px}.panel{padding:28px 24px}}
+</style>
+</head>
+<body>
+<main class="card">
+<section class="hero"><div class="brand">AURELIA ACADEMY</div><div><h1>Learn with<br>purpose.</h1><p>Không gian học tiếng Anh của bạn — rõ ràng, tập trung và từng bước tiến bộ.</p></div><div class="tag">✦ Email verification · OTP</div></section>
+<section class="panel">
+<div class="eyebrow">Student access</div><h2>Đăng nhập học tập</h2>
+<p class="intro">Nhập email đã được AURELIA ACADEMY duyệt. Chúng tôi sẽ gửi mã xác nhận đến email của bạn.</p>
+<form id="email-form"><label for="email">Email học viên</label><input id="email" type="email" autocomplete="email" placeholder="ban@example.com" required><button id="send" type="submit">Gửi mã OTP</button></form>
+<form id="otp-form" hidden><label for="otp">Mã OTP trong email</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="Nhập mã xác nhận" required><button id="verify" type="submit">Xác nhận và đăng nhập</button><button id="back" class="secondary" type="button">Dùng email khác</button></form>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<section id="lessons" class="lessons"><div class="eyebrow">Your lessons</div><h2 style="font-size:20px">Chào mừng bạn!</h2><p class="intro">Email đã được duyệt. Chọn bài học bên dưới.</p><a class="lesson" href="./index.html">Unit 4 · Time <span>↗</span></a><a class="lesson" href="./unit-5.html">Unit 5 · Dates <span>↗</span></a><a class="lesson" href="./unit-6.html">Unit 6 · Jobs <span>↗</span></a><button id="logout" class="secondary" type="button">Đăng xuất</button></section>
+<p class="fine">AURELIA ACADEMY · Nếu email chưa được cấp quyền, vui lòng liên hệ quản trị viên.</p>
+</section></main>
+<script>
+(() => {
+  const URL='https://cgtmfaotwizutnoejimq.supabase.co';
+  const KEY='sb_publishable_AKmBCvX93UMGKzpwFLPusQ_eOMRW_00';
+  const client=supabase.createClient(URL,KEY);
+  const ef=document.getElementById('email-form'), of=document.getElementById('otp-form'), emailEl=document.getElementById('email'), otpEl=document.getElementById('otp'), status=document.getElementById('status'), lessons=document.getElementById('lessons');
+  let pending='';
+  function msg(t,c='info'){status.textContent=t;status.className='status show '+c}
+  function norm(s){return s.trim().toLowerCase()}
+  async function check(user){
+    const email=norm(user?.email||''); if(!email) throw Error('Không xác định được email tài khoản.');
+    const {data,error}=await client.rpc('is_approved_student');
+    if(error) throw Error('Chưa kiểm tra được quyền học. Cần kiểm tra hàm is_approved_student và quyền gọi RPC trong Supabase.');
+    if(data!==true){await client.auth.signOut();lessons.classList.remove('show');throw Error('Email này chưa được AURELIA ACADEMY cấp quyền học. Vui lòng liên hệ quản trị viên.')}
+    ef.hidden=true;of.hidden=true;lessons.classList.add('show');msg('Đăng nhập thành công: '+email,'ok');
+  }
+  ef.addEventListener('submit',async e=>{e.preventDefault();pending=norm(emailEl.value);const b=document.getElementById('send');b.disabled=true;b.textContent='Đang gửi mã…';msg('Đang yêu cầu gửi mã. Hãy kiểm tra hộp thư và thư mục Spam.');try{const {error}=await client.auth.signInWithOtp({email:pending,options:{shouldCreateUser:true}});if(error)throw error;ef.hidden=true;of.hidden=false;otpEl.focus();msg('Nếu email nhận được thư, hãy nhập mã xác nhận để tiếp tục.','ok')}catch(err){msg(err.message||'Chưa gửi được mã. Vui lòng thử lại.','error')}finally{b.disabled=false;b.textContent='Gửi mã OTP'}});
+  of.addEventListener('submit',async e=>{e.preventDefault();const b=document.getElementById('verify');b.disabled=true;b.textContent='Đang xác thực…';msg('Đang xác thực mã và kiểm tra quyền học…');try{const {data,error}=await client.auth.verifyOtp({email:pending,token:otpEl.value.trim(),type:'email'});if(error)throw error;await check(data.user)}catch(err){msg(err.message||'Mã OTP không hợp lệ hoặc đã hết hạn.','error')}finally{b.disabled=false;b.textContent='Xác nhận và đăng nhập'}});
+  document.getElementById('back').addEventListener('click',()=>{of.hidden=true;ef.hidden=false;otpEl.value='';pending='';msg('Nhập email bạn muốn dùng để đăng nhập.')});
+  document.getElementById('logout').addEventListener('click',async()=>{await client.auth.signOut();lessons.classList.remove('show');ef.hidden=false;of.hidden=true;otpEl.value='';pending='';msg('Bạn đã đăng xuất.')});
+  client.auth.getSession().then(async({data,error})=>{if(!error&&data.session){try{await check(data.session.user)}catch(e){msg(e.message,'error')}}});
+})();
+</script>
+</body></html>
